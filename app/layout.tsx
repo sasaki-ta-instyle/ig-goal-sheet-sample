@@ -7,6 +7,7 @@ const TITLE = "目標設定シート 見本 — INSTYLE GROUP";
 const DESCRIPTION = "INSTYLE GROUP が社員の目標設定と評価に用いている実物シートの見本です。グループ → 会社 → 部署 → 個人 と段階的に目標を分解し、ギャランティ／ボーナス／昇格採点まで一気通貫で扱います。";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true },
   metadataBase: new URL(SITE_URL),
   title: TITLE,
   description: DESCRIPTION,
