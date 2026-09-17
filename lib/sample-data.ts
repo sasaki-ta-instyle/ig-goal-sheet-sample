@@ -16,7 +16,6 @@ export function createSampleFormData(): FormData {
       revenue: { prev: '4,800,000,000', target: '5,400,000,000', actual: '' },
       operatingProfit: { prev: '720,000,000', target: '900,000,000', actual: '' },
       operatingMargin: { prev: '15.0', target: '16.7', actual: '' },
-      grossProfit: { prev: '2,160,000,000', target: '2,430,000,000', actual: '' },
       strategicFocus:
         'D2C 事業の自社チャネル比率を 60% 以上に。クリエイティブ内製率を上げ、運用コストを 15% 圧縮する。',
     },
@@ -24,7 +23,6 @@ export function createSampleFormData(): FormData {
       revenue: { prev: '1,200,000,000', target: '1,400,000,000', actual: '' },
       operatingProfit: { prev: '180,000,000', target: '230,000,000', actual: '' },
       operatingMargin: { prev: '15.0', target: '16.4', actual: '' },
-      grossProfit: { prev: '540,000,000', target: '630,000,000', actual: '' },
       strategicFocus:
         '採用ブランディングと制度設計を統合し、リファラル比率 30% を目指す。半期で核人材 6 名を採用する。',
     },
