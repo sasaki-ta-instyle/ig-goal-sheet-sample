@@ -1,5 +1,6 @@
 'use client';
 import { CompanyGoalData, KpiNumRow } from '@/lib/types';
+import { PREV_PERIOD_SUB, CURRENT_PERIOD_SUB } from '@/config/period';
 
 interface Props {
   data: CompanyGoalData;
@@ -23,12 +24,14 @@ const toNumeric = (v: string) => {
   return sign + body;
 };
 
-function calcGrowth(prev: string, actual: string): string {
+// 前期→今期の変化率。分母は絶対値にして前期がマイナス（赤字）でも符号を素直に出す。
+// 単位は円額の指標なら % (前年比成長率)、%表記の指標（利益率など）なら pt (差分ポイント)。
+function calcGrowth(prev: string, actual: string, unit: '%' | 'pt' = '%'): string {
   const p = parseFloat(prev.replace(/,/g, ''));
   const a = parseFloat(actual.replace(/,/g, ''));
   if (!prev || !actual || isNaN(p) || isNaN(a) || p === 0) return '—';
-  const val = Math.round((a / p - 1) * 100);
-  return `${val > 0 ? '+' : ''}${val}%`;
+  const val = Math.round(((a - p) / Math.abs(p)) * 100);
+  return `${val > 0 ? '+' : ''}${val}${unit}`;
 }
 
 function TI({ value, onChange, placeholder, numeric, readOnly }: { value: string; onChange: (v: string) => void; placeholder?: string; numeric?: boolean; readOnly?: boolean }) {
@@ -62,16 +65,16 @@ const computeMargin = (profit: string, revenue: string): string => {
 };
 
 const NUM_COLS: { key: keyof KpiNumRow; label: string; sub: string; numeric?: boolean }[] = [
-  { key: 'prev', label: '前期実績（円）', sub: '2025.10〜2026.3', numeric: true },
-  { key: 'target', label: '今期目標（円）', sub: '2026.4〜9', numeric: true },
-  { key: 'actual', label: '今期実績（円）', sub: '2026.4〜9', numeric: true },
+  { key: 'prev', label: '前期実績（円）', sub: PREV_PERIOD_SUB, numeric: true },
+  { key: 'target', label: '今期目標（円）', sub: CURRENT_PERIOD_SUB, numeric: true },
+  { key: 'actual', label: '今期実績（円）', sub: CURRENT_PERIOD_SUB, numeric: true },
 ];
 
 function KpiNumTable({
   rows,
   onUpdate,
 }: {
-  rows: { label: string; data: KpiNumRow; readOnlyNumeric?: boolean }[];
+  rows: { label: string; data: KpiNumRow; readOnlyNumeric?: boolean; growthUnit?: '%' | 'pt' }[];
   onUpdate: (rowIdx: number, field: keyof KpiNumRow, value: string) => void;
 }) {
   return (
@@ -90,10 +93,16 @@ function KpiNumTable({
             {NUM_COLS.map(c => (
               <th key={c.key}>
                 {c.label}
-                {c.sub && <span style={{ display: 'block', fontWeight: 400, fontSize: '.7rem', opacity: 0.7 }}>{c.sub}</span>}
+                {c.sub && (
+                  <span style={{ display: 'block', fontWeight: 400, fontSize: '.7rem', opacity: 0.7 }}>
+                    {c.sub.split(/(?<=-)/).map((part, i) => (
+                      <span key={i} style={{ display: 'block' }}>{part}</span>
+                    ))}
+                  </span>
+                )}
               </th>
             ))}
-            <th>成長率<span style={{ display: 'block' }}>（％）</span></th>
+            <th>成長率</th>
           </tr>
         </thead>
         <tbody>
@@ -112,7 +121,7 @@ function KpiNumTable({
                 </td>
               ))}
               <td style={{ textAlign: 'center', fontWeight: 600, fontSize: '.875rem', color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>
-                {calcGrowth(row.data.prev, row.data.actual)}
+                {calcGrowth(row.data.prev, row.data.actual, row.growthUnit ?? '%')}
               </td>
             </tr>
           ))}
@@ -164,9 +173,9 @@ export default function CompanyGoalForm({
     set(rowKey, { ...data[rowKey], [field]: value });
   };
 
-  const profitRows = [
-    { label: `${labelPrefix}営業利益`, rowKey: 'operatingProfit' as const, readOnlyNumeric: false },
-    { label: `${labelPrefix}営業利益率`, rowKey: 'operatingMargin' as const, readOnlyNumeric: true },
+  const profitRows: { label: string; rowKey: 'operatingProfit' | 'operatingMargin'; readOnlyNumeric: boolean; growthUnit: '%' | 'pt' }[] = [
+    { label: `${labelPrefix}営業利益`, rowKey: 'operatingProfit', readOnlyNumeric: false, growthUnit: '%' },
+    { label: `${labelPrefix}営業利益率`, rowKey: 'operatingMargin', readOnlyNumeric: true, growthUnit: 'pt' },
   ];
 
   return (
@@ -222,7 +231,7 @@ export default function CompanyGoalForm({
 
       <p style={{ fontSize: '.8125rem', fontWeight: 600, marginBottom: 12 }}>③ 利益</p>
       <KpiNumTable
-        rows={profitRows.map(r => ({ label: r.label, data: data[r.rowKey], readOnlyNumeric: r.readOnlyNumeric }))}
+        rows={profitRows.map(r => ({ label: r.label, data: data[r.rowKey], readOnlyNumeric: r.readOnlyNumeric, growthUnit: r.growthUnit }))}
         onUpdate={(i, field, value) => updateProfitRow(profitRows[i].rowKey, field, value)}
       />
     </div>

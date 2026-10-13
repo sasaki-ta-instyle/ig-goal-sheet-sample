@@ -1,3 +1,5 @@
+import { CURRENT_PERIOD } from '@/config/period';
+
 export type Grade = 'I' | "N'" | 'N' | "n'" | 'n' | "S'" | 'S' | "s'" | 's' | "T'" | 'T' | "t'" | 't' | "Y'" | 'Y' | "y'" | 'y' | "L'" | 'L' | "l'" | 'l' | "E'" | 'E' | "e'" | 'e';
 
 export interface CoverData {
@@ -212,7 +214,7 @@ const emptyKpiNum = (): KpiNumRow => ({ prev: '', target: '', actual: '' });
 const emptyDeptKpiNum = (): DeptKpiNumRow => ({ label: '', prev: '', target: '', actual: '', relatedKgi: '' });
 const emptyDeptKgi = (): DeptKgiRow => ({ mission: '', kgi: '' });
 
-export const CURRENT_PERIOD = '2026.4〜9';
+export { CURRENT_PERIOD };
 
 export function createDefaultFormData(): FormData {
   return {

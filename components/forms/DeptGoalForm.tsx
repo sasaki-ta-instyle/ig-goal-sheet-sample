@@ -1,10 +1,12 @@
 'use client';
 import { DeptGoalData, DeptKpiNumRow, DeptKgiRow, DeptActionRow } from '@/lib/types';
+import { PREV_PERIOD_SUB, CURRENT_PERIOD_SUB } from '@/config/period';
 
 interface Props {
   data: DeptGoalData;
   onChange: (data: DeptGoalData) => void;
   companyStrategicFocus: string;
+  title?: string;
 }
 
 const autoComma = (v: string) => {
@@ -17,11 +19,12 @@ const autoComma = (v: string) => {
   return parts.join('.');
 };
 
+// 前期→今期の変化率。分母は絶対値にして前期がマイナス（赤字）でも符号を素直に出す。
 function calcGrowth(prev: string, actual: string): string {
   const p = parseFloat(prev.replace(/,/g, ''));
   const a = parseFloat(actual.replace(/,/g, ''));
   if (!prev || !actual || isNaN(p) || isNaN(a) || p === 0) return '—';
-  const val = Math.round((a / p - 1) * 100);
+  const val = Math.round(((a - p) / Math.abs(p)) * 100);
   return `${val > 0 ? '+' : ''}${val}%`;
 }
 
@@ -38,12 +41,12 @@ function TI({ value, onChange, placeholder, autoNumber, compact }: { value: stri
 }
 
 const KPI_COLS: { key: 'prev' | 'target' | 'actual'; label: string; sub: string; autoNumber?: boolean }[] = [
-  { key: 'prev', label: '前期実績', sub: '2025.10〜2026.3', autoNumber: true },
-  { key: 'target', label: '今期目標', sub: '2026.4〜9', autoNumber: true },
-  { key: 'actual', label: '今期実績', sub: '2026.4〜9', autoNumber: true },
+  { key: 'prev', label: '前期実績', sub: PREV_PERIOD_SUB, autoNumber: true },
+  { key: 'target', label: '今期目標', sub: CURRENT_PERIOD_SUB, autoNumber: true },
+  { key: 'actual', label: '今期実績', sub: CURRENT_PERIOD_SUB, autoNumber: true },
 ];
 
-export default function DeptGoalForm({ data, onChange, companyStrategicFocus }: Props) {
+export default function DeptGoalForm({ data, onChange, companyStrategicFocus, title = '03｜部署目標 記入シート' }: Props) {
   const set = <K extends keyof DeptGoalData>(key: K, value: DeptGoalData[K]) =>
     onChange({ ...data, [key]: value });
 
@@ -76,7 +79,7 @@ export default function DeptGoalForm({ data, onChange, companyStrategicFocus }: 
 
   return (
     <div>
-      <p className="section-title">03｜部署目標 記入シート</p>
+      <p className="section-title">{title}</p>
 
       <p style={{ fontSize: '.8125rem', fontWeight: 600, marginBottom: 12 }}>① 上位目標との接続</p>
       <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 28 }}>
@@ -165,7 +168,13 @@ export default function DeptGoalForm({ data, onChange, companyStrategicFocus }: 
               {KPI_COLS.map(c => (
                 <th key={c.key}>
                   {c.label}
-                  {c.sub && <span style={{ display: 'block', fontWeight: 400, fontSize: '.7rem', opacity: 0.7, whiteSpace: 'nowrap' }}>{c.sub}</span>}
+                  {c.sub && (
+                    <span style={{ display: 'block', fontWeight: 400, fontSize: '.7rem', opacity: 0.7 }}>
+                      {c.sub.split(/(?<=-)/).map((part, i) => (
+                        <span key={i} style={{ display: 'block' }}>{part}</span>
+                      ))}
+                    </span>
+                  )}
                 </th>
               ))}
               <th style={{ whiteSpace: 'nowrap' }}>成長率（％）</th>

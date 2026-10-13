@@ -1,5 +1,6 @@
 'use client';
 import { GRADE_TABLE, Grade, GradeExpectations } from '@/lib/types';
+import { GRADE_AS_OF } from '@/config/period';
 
 interface Props {
   selectedGrade: Grade | '';
@@ -142,7 +143,7 @@ export default function GradeForm({ selectedGrade, expectations, onChange }: Pro
           </tbody>
         </table>
       </div>
-      <p style={{ fontSize: '.75rem', color: 'var(--color-text-muted)', marginTop: 12 }}>※ 2026年10月時点</p>
+      <p style={{ fontSize: '.75rem', color: 'var(--color-text-muted)', marginTop: 12 }}>※ {GRADE_AS_OF}</p>
     </div>
   );
 }
